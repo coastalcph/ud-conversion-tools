@@ -1,7 +1,17 @@
 from __future__ import print_function, division
 import networkx as nx
 
-CONLL06_COLUMNS = ['id', 'word', 'lemma', 'cpos', 'pos', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
+
+CONLL06_COLUMNS = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
+
+
+def head_of(sent, n):
+    for u, v in sent.edges():
+         if v == n:
+             return u
+    return None
+    #return sent.predecessors(n)[0]
+
 
 def parse_id(id_str):
     if id_str == '_':
@@ -76,3 +86,23 @@ def read_conll_u_file(filename):
 
 
     return sentences
+
+def write_conll_2006(list_of_graphs, conll_path):
+    with open(conll_path,'w') as out:
+        for sent_i, sent in enumerate(list_of_graphs):
+            if sent_i > 0:
+                print("", file=out)
+            for token_i in range(1, max(sent.nodes()) + 1):
+                token_dict = dict(sent.node[token_i])
+                head_i = head_of(sent, token_i)
+                token_dict['head'] = head_i
+                # print(head_i, token_i)
+                token_dict['deprel'] = sent[head_i][token_i]['deprel']
+                token_dict['id'] = token_i
+                token_dict['feats'] = "_"
+
+                row = [str(token_dict.get(col, '_')) for col in CONLL06_COLUMNS]
+                print(u"\t".join(row), file=out)
+
+        # emtpy line afterwards
+        print(u"", file=out)

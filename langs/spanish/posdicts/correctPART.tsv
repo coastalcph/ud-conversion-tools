@@ -1,0 +1,24 @@
+5	hola	PART	_	INTJ	_	discourse
+4	ex	PART	_	PART	_	_
+3	re	PART	_	PART	_	_
+2	l	PART	_	PART	_	_
+2	co	PART	_	PART	_	_
+1	vice	PART	_	PART	_	_
+1	vaya	PART	_	DET	_	det
+1	vamos	PART	_	INTJ	_	discourse
+1	trans	PART	_	PART	_	_
+1	todos	PART	_	PRON	Gender=Masc|Number=Plur|PronType=Tot	nmod
+1	super	PART	_	PART	_	_
+1	sub	PART	_	PART	_	_
+1	sin	PART	_	PART	_	_
+1	semi	PART	_	PART	_	_
+1	ruso	PART	_	PART	_	_
+1	que	PART	_	SCONJ	_	mark
+1	pre	PART	_	PART	_	_
+1	post	PART	_	PART	_	_
+1	hoc	PART	_	PART	_	_
+1	gram	PART	_	PART	_	_
+1	fue	PART	_	VERB	Mood=Ind|Number=Sing|Person=3|Tense=Past|VerbForm=Fin	root
+1	ficha	PART	_	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	_
+1	adios	PART	_	INTJ	_	discourse
+1	abandono	PART	_	PVERB	Mood=Ind|Number=Sing|Person=3|Tense=Past	root
