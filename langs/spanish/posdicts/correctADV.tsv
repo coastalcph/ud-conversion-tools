@@ -109,7 +109,7 @@
 3	fuerte	ADV	_	ADV	_	_
 3	entretanto	ADV	_	ADV	_	_
 3	enfrente	ADV	_	ADV	_	_
-3	embargo	ADV	_	NOUN	_	Gender=Masc|Number=Sing	nmod
+3	embargo	ADV	_	NOUN	Gender=Masc|Number=Sing	nmod
 3	compre	ADV	_	VERB	Mood=Sub|Number=Sing|Person=3|Tense=Pres|VerbForm=Fi	_
 3	alla	ADV	_	ADV	_	_
 3	adonde	ADV	_	ADV	_	_
@@ -152,7 +152,7 @@
 1	muchos	ADV	_	ADV	_	_
 1	muchas	ADV	_	ADV	_	_
 1	mientrás	ADV	_	ADV	_	_
-1	menudo	ADV	_	NOUN	_	Gender=Masc|Number=Sing	nmod
+1	menudo	ADV	_	NOUN	Gender=Masc|Number=Sing	nmod
 1	malfurion	ADV	_	PROPN	Gender=Masc|Number=Sing	nsubj
 1	local	ADV	_	ADV	_	_
 1	lamentable	ADV	_	ADV	_	_
@@ -178,7 +178,7 @@
 1	construida	ADV	_	VERB	Gender=Fem|Number=Sing|Tense=Past|VerbForm=Part	acl
 1	consciente	ADV	_	ADJ	Number=Sing	advmod
 1	conforme	ADV	_	ADV	_	_
-1	chaosium	ADV	_	PROPN	_	Gender=Masc|Number=Sing	30	nsubj
+1	chaosium	ADV	_	PROPN	Gender=Masc|Number=Sing	nsubj
 1	cerquita	ADV	_	ADV	_	_
 1	bueno	ADV	_	INTJ	_	discourse
 1	brillante	ADV	_	ADV	_	_

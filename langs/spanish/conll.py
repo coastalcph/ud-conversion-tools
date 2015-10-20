@@ -106,3 +106,17 @@ def write_conll_2006(list_of_graphs, conll_path):
 
         # emtpy line afterwards
         print(u"", file=out)
+
+
+def write_sentence_conll2006(sent):
+    for token_i in range(1, max(sent.nodes()) + 1):
+        token_dict = dict(sent.node[token_i])
+        head_i = head_of(sent, token_i)
+        token_dict['head'] = head_i
+        # print(head_i, token_i)
+        token_dict['deprel'] = sent[head_i][token_i]['deprel']
+        token_dict['id'] = token_i
+        token_dict['feats'] = "_"
+        row = [str(token_dict.get(col, '_')) for col in CONLL06_COLUMNS]
+        print(u"\t".join(row))
+    print()
