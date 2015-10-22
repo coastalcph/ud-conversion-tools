@@ -40,6 +40,10 @@ CONLL_U_COLUMNS = [('id', parse_id), ('form', str), ('lemma', str), ('cpostag', 
                    ('postag', str), ('feats', parse_feats), ('head', parse_id), ('deprel', str),
                    ('deps', parse_deps), ('misc', str)]
 
+CONLL_U_COLUMNS = [('id', parse_id), ('form', str), ('lemma', str), ('cpostag', str),
+                   ('postag', str), ('feats', str), ('head', parse_id), ('deprel', str),
+                   ('deps', parse_deps), ('misc', str)]
+
 
 def read_conll_u_file(filename):
     sentences = []
@@ -62,7 +66,7 @@ def read_conll_u_file(filename):
             sent = nx.DiGraph()
         elif line.startswith("#"):
             if 'comment' not in sent.graph:
-                sent.graph['comment'] = []
+                sent.graph['comment'] = [line]
             else:
                 sent.graph['comment'].append(line)
         else:
@@ -87,6 +91,17 @@ def read_conll_u_file(filename):
 
     return sentences
 
+
+def featstostring(featsdict):
+    acc = []
+    for featname in sorted(featsdict.keys()):
+        acc.append(featname+"="+featsdict[featname])
+
+    if acc:
+        return "|".join(acc)
+    else:
+        return "_"
+
 def write_conll_2006(list_of_graphs, conll_path):
     with open(conll_path,'w') as out:
         for sent_i, sent in enumerate(list_of_graphs):
@@ -109,6 +124,9 @@ def write_conll_2006(list_of_graphs, conll_path):
 
 
 def write_sentence_conll2006(sent):
+    if 'comment' in sent.graph:
+        for commentline in sent.graph['comment']:
+            print(commentline)
     for token_i in range(1, max(sent.nodes()) + 1):
         token_dict = dict(sent.node[token_i])
         head_i = head_of(sent, token_i)
@@ -116,7 +134,17 @@ def write_sentence_conll2006(sent):
         # print(head_i, token_i)
         token_dict['deprel'] = sent[head_i][token_i]['deprel']
         token_dict['id'] = token_i
-        token_dict['feats'] = "_"
+        #token_dict['feats'] = featstostring(sent.node[token_i]["feats"])
+        token_dict['feats'] = sent.node[token_i]["feats"]
+
         row = [str(token_dict.get(col, '_')) for col in CONLL06_COLUMNS]
+        if token_i in sent.graph["multi_tokens"]:
+            currentmulti = sent.graph["multi_tokens"][token_i]
+            currentmulti["id"]=str(currentmulti["id"][0])+"-"+str(currentmulti["id"][1])
+            currentmulti["feats"]="_"
+            currentmulti["head"]="_"
+
+            rowmulti = [str(currentmulti.get(col, '_')) for col in CONLL06_COLUMNS]
+            print(u"\t".join(rowmulti))
         print(u"\t".join(row))
     print()

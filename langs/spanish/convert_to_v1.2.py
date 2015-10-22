@@ -1,7 +1,7 @@
 from conll import *
 import copy
 from collections import Counter, defaultdict
-import os
+import os, sys, argparse
 
 
 
@@ -12,7 +12,6 @@ def pathtoroot(sent, child):
         path.append(newhead)
         newhead = head_of(sent, newhead)
     return path
-
 
 def get_highest_index_of_span(sent, span):  # retrieves the node index that is closest to root
     distancestoroot = [len(pathtoroot(sent, x)) for x in span]
@@ -42,61 +41,6 @@ def get_sentence_as_string(sent,printid=False):
             out.append(sent.node[token_i]['form'])
     return u" ".join(out)
 
-
-
-
-posdict = {}
-
-for file in os.listdir("posdicts/"):
-    for line in open("posdicts/"+file):
-        #1	vice	PART	_	PART	_	_
-        try:
-            freq, word, POS, feats, newpos, newfeats, newlabel = line.strip().split("\t")
-            if POS != newpos:
-                posdict[(word,POS)] = [newpos,newfeats,newlabel]
-        except:
-            print(line)
-
-
-
-def getproperties(propertyname,sent):
-    return [sent.node[n][propertyname] for n in sorted(sent.nodes()) ]
-
-def mew_make_leftheaded2(sent):
-    sentenceanalysis = []
-    mwe_dependents = []
-    for h,d in sent.edges():
-        if sent[h][d]["deprel"] == "mwe" and h > d:
-            step="("+",".join(map(str,[h,d,sent.node[h]["form"],sent.node[d]["form"]]))+")"
-            sentenceanalysis.append(step)
-            mwe_dependents.append(d)
-    #and now we identify mew chains
-
-    mwe_chains = []
-    if mwe_dependents:
-        dependent_stack = set(copy.copy(mwe_dependents))
-        current = min(dependent_stack)
-        currentchain = [current]
-
-        mwe_chains = []
-        while dependent_stack:
-            current = max(dependent_stack)
-            currentset = set([current])
-            prevset = set()
-            while currentset != prevset:
-                prevset = copy.copy(currentset)
-                currentset = currentset.union(set(sent.successors(current)).intersection(set(mwe_dependents)))
-            mwe_chains.append(currentset)
-            dependent_stack = dependent_stack.difference(currentset)
-    if len(mwe_dependents) > 1:
-            print(mwe_chains,mwe_dependents,sentenceanalysis)
-    #    print(sentenceanalysis,getproperties("form",sent))
-    return sent
-
-
-
-
-
 def POS_type_constrains(sent,posdict):
     for n in sent.nodes():
         form = sent.node[n]["form"]
@@ -104,9 +48,25 @@ def POS_type_constrains(sent,posdict):
         if (form,POS) in posdict:
             newpos, newfeats,newlabel = posdict[(form,POS)]
             sent.node[n]["cpostag"] = newpos
-            sent.node[n]["feats"] = newfeats
+            sent.node[n]["feats"] = parse_feats(newfeats)
             if newlabel != "_":
                 sent[head_of(sent,n)][n]["deprel"] = newlabel
+    return sent
+
+
+def PROPN_functionwords(sent):
+    for n in sorted(sent.nodes())[1:]:
+        newpos = "PROPN"
+        label = sent[head_of(sent,n)][n]["deprel"]
+        cpostag = sent.node[n]["cpostag"]
+        if cpostag == "PROPN":
+            if label == "case":
+                sent.node[n]["cpostag"]="ADP"
+                sent.node[n]["feats"]= "_"
+
+            if label == "cc":
+                sent.node[n]["cpostag"]="CONJ"
+                sent.node[n]["feats"]= "_"
     return sent
 
 
@@ -120,9 +80,6 @@ def mwe_ADP(sent):
                     sent[h][d]["deprel"] = "case"
         except:
             print(h,d, sent.edges())
-    return sent
-
-def reattach_function_word_in_PROPN(sent):
     return sent
 
 
@@ -180,19 +137,43 @@ def make_chain_left_headed(sent,triggerlabel):
 
 
 
-sentences = read_conll_u_file("es-ud-all.conllu")
-for s in sentences:
-    #s = retag(s)
-    #s = relemmatize(s)
-    s = POS_type_constrains(s,posdict)
-    s = mwe_ADP(s)
-    s = make_chain_left_headed(s,"name")
-    s = make_chain_left_headed(s,"mwe")
-    write_sentence_conll2006(s)
+def read_formposdict(infolder):
+    D = {}
+    for file in os.listdir(infolder):
+        print(file, file=sys.stderr)
+        for line in open(infolder+file):
+            try:
+                freq, word, POS, feats, newpos, newfeats, newlabel = line.strip().split("\t")
+                word = word.lower()
+                if POS != newpos:
+                    D[(word,POS)] = [newpos,newfeats,newlabel]
+            except:
+                pass
+    return D
+
+def main():
+    parser = argparse.ArgumentParser(description="""UD_Spanish v1.1 to v1.2 """)
+    parser.add_argument('infile')
+    args = parser.parse_args()
+
+
+    posdict = read_formposdict("posdicts/")
+    #PROPN_fx_dict = read_formposdict("PROPNfx/")
+
+
+    sentences = read_conll_u_file(args.infile)
+    for s in sentences:
+        s = PROPN_functionwords(s)
+        s = mwe_ADP(s)
+        #s = POS_type_constrains(s,posdict)
+        s = make_chain_left_headed(s,"name")
+        s = make_chain_left_headed(s,"mwe")
+        write_sentence_conll2006(s)
 
 
 
-
+if __name__ == "__main__":
+    main()
 
 
 #sentences = read_conll_u_file("es-ud-all.conllu")
