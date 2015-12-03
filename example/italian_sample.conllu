@@ -1,0 +1,61 @@
+# isst_tanl sent_id  1
+1	LONDRA	Londra	PROPN	SP	_	0	root	_	_
+2	.	.	PUNCT	FS	_	1	punct	_	_
+
+# isst_tanl sent_id  2
+1	Gas	gas	NOUN	S	Gender=Masc	0	root	_	_
+2-3	dalla	_	_	_	_	_	_	_	_
+2	da	da	ADP	E	_	4	case	_	_
+3	la	il	DET	RD	Definite=Def|Gender=Fem|Number=Sing|PronType=Art	4	det	_	_
+4	statua	statua	NOUN	S	Gender=Fem|Number=Sing	1	nmod	_	_
+5	.	.	PUNCT	FS	_	1	punct	_	_
+
+# isst_tanl sent_id  4
+1	LONDRA	Londra	PROPN	SP	_	0	root	_	_
+2	.	.	PUNCT	FS	_	1	punct	_	_
+
+# isst_tanl sent_id  5
+1	Inconsueto	inconsueto	ADJ	A	Gender=Masc|Number=Sing	2	amod	_	_
+2	allarme	allarme	NOUN	S	Gender=Masc|Number=Sing	0	root	_	_
+3-4	alla	_	_	_	_	_	_	_	_
+3	a	a	ADP	E	_	5	case	_	_
+4	la	il	DET	RD	Definite=Def|Gender=Fem|Number=Sing|PronType=Art	5	det	_	_
+5	Tate	Tate	PROPN	SP	_	2	nmod	_	_
+6	Gallery	Gallery	PROPN	SP	_	5	name	_	_
+7	:	:	PUNCT	FC	_	2	punct	_	_
+
+# isst_tanl sent_id  9
+1	intitolata	intitolare	VERB	V	Gender=Fem|Number=Sing|Tense=Past|VerbForm=Part	8	advcl	_	_
+2	"	"	PUNCT	FB	_	3	punct	_	_
+3	Riti	Riti	PROPN	SP	_	1	xcomp	_	_
+4	di	di	ADP	E	_	5	case	_	_
+5	Passaggio	Passaggio	PROPN	SP	_	3	nmod	_	_
+6	"	"	PUNCT	FB	_	3	punct	_	_
+7	,	,	PUNCT	FF	_	1	punct	_	_
+8	ha	avere	VERB	V	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	0	root	_	_
+9	la	il	DET	RD	Definite=Def|Gender=Fem|Number=Sing|PronType=Art	10	det	_	_
+10	forma	forma	NOUN	S	Gender=Fem|Number=Sing	8	dobj	_	_
+11	di	di	ADP	E	_	13	case	_	_
+12	una	uno	DET	RI	Definite=Ind|Gender=Fem|Number=Sing|PronType=Art	13	det	_	_
+13	scala	scala	NOUN	S	Gender=Fem|Number=Sing	10	nmod	_	_
+14	e	e	CONJ	CC	_	8	cc	_	_
+15-16	nei	_	_	_	_	_	_	_	_
+15	in	in	ADP	E	_	17	case	_	_
+16	i	il	DET	RD	Definite=Def|Gender=Masc|Number=Plur|PronType=Art	17	det	_	_
+17	tubi	tubo	NOUN	S	Gender=Masc|Number=Plur	18	nmod	_	_
+18	contiene	contenere	VERB	V	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	8	conj	_	_
+19	iodio	iodio	NOUN	S	Gender=Masc|Number=Sing	18	dobj	_	_
+20	,	,	PUNCT	FF	_	19	punct	_	_
+21	che	che	PRON	PR	PronType=Rel	28	nsubj	_	_
+22	scaldato	scaldare	VERB	V	Gender=Masc|Number=Sing|Tense=Past|VerbForm=Part	28	advcl	_	_
+23-24	dalle	_	_	_	_	_	_	_	_
+23	da	da	ADP	E	_	25	case	_	_
+24	le	il	DET	RD	Definite=Def|Gender=Fem|Number=Plur|PronType=Art	25	det	_	_
+25	luci	luce	NOUN	S	Gender=Fem|Number=Plur	22	nmod	_	_
+26	si	si	PRON	PC	Person=3|PronType=Clit	28	expl	_	_
+27	è	essere	AUX	VA	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	28	aux	_	_
+28	trasformato	trasformare	VERB	V	Gender=Masc|Number=Sing|Tense=Past|VerbForm=Part	19	acl:relcl	_	_
+29	in	in	ADP	E	_	30	case	_	_
+30	gas	gas	NOUN	S	Gender=Masc	28	nmod	_	_
+31	.	.	PUNCT	FS	_	8	punct	_	_
+
