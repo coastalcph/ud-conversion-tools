@@ -14,6 +14,10 @@ parser.add_argument('--keep_fused_forms', help="By default removes fused tokens"
 parser.add_argument('--lang', help="specify a language [de, en, it, fr, sv]", default=None, required=True)
 args = parser.parse_args()
 
+if sys.version_info < (3,0):
+    print("Sorry, requires Python 3.x.") #suggestion: install anaconda python
+    sys.exit(1)
+
 POSRANKPRECEDENCEDICT = defaultdict(list)
 POSRANKPRECEDENCEDICT["none"] = []
 POSRANKPRECEDENCEDICT["bg"] = []
