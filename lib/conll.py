@@ -1,5 +1,6 @@
 from collections import defaultdict
 import networkx as nx
+from collections import Counter
 
 
 def parse_id(id_str):
@@ -54,9 +55,9 @@ class DependencyTree(nx.DiGraph):
         out = []
         for token_i in range(1, max(self.nodes()) + 1):
             if printid:
-                out.append(str(token_i)+":"+self.node[token_i]['word'])
+                out.append(str(token_i)+":"+self.node[token_i]['form'])
             else:
-                out.append(self.node[token_i]['word'])
+                out.append(self.node[token_i]['form'])
         return u" ".join(out)
 
     def subsumes(self, head, child):
@@ -64,6 +65,7 @@ class DependencyTree(nx.DiGraph):
             return True
 
     def get_highest_index_of_span(self, span):  # retrieves the node index that is closest to root
+        #TODO: CANDIDATE FOR DEPRECATION
         distancestoroot = [len(self.pathtoroot(self, x)) for x in span]
         shortestdistancetoroot = min(distancestoroot)
         spanhead = span[distancestoroot.index(shortestdistancetoroot)]
@@ -71,11 +73,136 @@ class DependencyTree(nx.DiGraph):
 
 
     def get_deepest_index_of_span(self, span):  # retrieves the node index that is farthest from root
+        #TODO: CANDIDATE FOR DEPRECATION
         distancestoroot = [len(self.pathtoroot(self, x)) for x in span]
-        shortestdistancetoroot = max(distancestoroot)
-        lownode = span[distancestoroot.index(shortestdistancetoroot)]
+        longestdistancetoroot = max(distancestoroot)
+        lownode = span[distancestoroot.index(longestdistancetoroot)]
         return lownode
 
+    def get_unique_highest_node(self,span):
+        distancestoroot = [len(nx.ancestors(self,x)) for x in span]
+        shortestdistancetoroot = min(distancestoroot)
+        distance_counter = Counter(distancestoroot)
+        if distance_counter[shortestdistancetoroot] == 1:
+            spanhead = span[distancestoroot.index(shortestdistancetoroot)]
+            return spanhead
+        else:
+            #there is no clear head candidate and we have to resort to POS heuristics
+            return None
+
+    def span_makes_subtree(self, initidx, endidx):
+        G = nx.DiGraph()
+        span_nodes = list(range(initidx,endidx+1))
+        span_words = [self.node[x]["form"] for x in span_nodes]
+        G.add_nodes_from(span_nodes)
+        for h,d in self.edges():
+            if h in span_nodes and d in span_nodes:
+                G.add_edge(h,d)
+        return nx.is_tree(G)
+
+    def _choose_spanhead_from__heuristics(self,span_nodes,pos_precedence_list):
+        #TODO ADD POS heuristics
+        #TODO ADD deprel heuristics
+        best_rank = len(pos_precedence_list) + 1
+        candidate_head = - 1
+        span_upos  = [self.node[x]["cpostag"]for x in span_nodes]
+        for upos, idx in zip(span_upos,span_nodes):
+            if pos_precedence_list.index(upos) < best_rank:
+                best_rank = pos_precedence_list.index(upos)
+                candidate_head = idx
+        return candidate_head
+
+
+    def _remove_node_properties(self,fields):
+        for n in sorted(self.nodes()):
+            for fieldname in self.node[n].keys():
+                if fieldname in fields:
+                    self.node[n][fieldname]="_"
+
+    def _remove_label_suffixes(self):
+        for h,d in self.edges():
+            if ":" in self[h][d]["deprel"]:
+                self[h][d]["deprel"]=self[h][d]["deprel"].split(":")[0]
+
+    def _keep_fused_form(self):
+
+
+        # For a span A,B  and external tokens C, such as  A > B > C, we have to
+        # Make A the head of the span
+        # Attach C-level tokens to A
+        #Remove B-level tokens, which are the subtokens of the fused form della: de la
+
+        if self.graph["multi_tokens"] == {}:
+            return
+
+        changes = False
+        for fusedform_idx in sorted(self.graph["multi_tokens"]):
+            fusedform = self.graph["multi_tokens"][fusedform_idx]["form"]
+            fusedform_start, fusedform_end = self.graph["multi_tokens"][fusedform_idx]["id"]
+            fuseform_span = list(range(fusedform_start,fusedform_end+1))
+            spanhead = self.get_unique_highest_node(fuseform_span) # N.B. no need for the subspan to be a tree if there is one single highest element
+            if not spanhead:
+                spanhead = self._choose_spanhead_from_POS_heuristics(fuseform_span)
+            if spanhead:
+                changes = True
+                #print(spanhead, self.node[spanhead]["form"],fusedform,self.get_sentence_as_string())
+
+                #Step 1: Replace form of head span (A)  with fusedtoken form  -- in this way we keep the lemma and features if any
+                self.node[spanhead]["form"] = "###"+fusedform
+                # 2-  Reattach C-level (external dependents) to A
+                #print(fuseform_span,spanhead)
+
+                internal_dependents = set(fuseform_span) - set([spanhead])
+                external_dependents = [nx.bfs_successors(self,x) for x in internal_dependents]
+                for depdict in external_dependents:
+                    for localhead in depdict:
+                        for ext_dep in depdict[localhead]:
+                            deprel = self[localhead][ext_dep]["deprel"]
+                            self.remove_edge(localhead,ext_dep)
+                            self.add_edge(spanhead,ext_dep,deprel=deprel)
+
+                #3- Remove B-level tokens
+                for int_dep in internal_dependents:
+                    self.remove_edge(self.head_of(int_dep),int_dep)
+                    self.remove_node(int_dep)
+                    #self.node[int_dep]["form"]="REMOVED"
+                    #self.add_edge(0,int_dep,deprel="REMOVED")
+
+        #4- reconstruct tree at the very end
+        new_index_dict = {}
+        for new_node_index, old_node_idex in enumerate(sorted(self.nodes())):
+            new_index_dict[old_node_idex] = new_node_index
+
+        T = DependencyTree() # Transfer DiGraph, to replace self
+
+        for n in sorted(self.nodes()):
+            T.add_node(new_index_dict[n],self.node[n])
+
+        for h, d in self.edges():
+            T.add_edge(new_index_dict[h],new_index_dict[d],deprel=self[h][d]["deprel"])
+
+
+        #Quick removal of edges and nodes
+        self.__init__()
+
+        #Rewriting the Deptree in Self
+        #TODO There must a more elegant way to rewrite self -- self= T for instance?
+        for n in sorted(T.nodes()):
+            self.add_node(n,T.node[n])
+
+        for h,d in T.edges():
+            self.add_edge(h,d,T[h][d])
+
+        #5. remove all fused forms form the multi_tokens field
+        self.graph["multi_tokens"] = {}
+        print(nx.is_tree(self))
+
+
+    def filter_sentence_content(self,keepFusedForm=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None):
+        if keepFusedForm:
+            self._keep_fused_form()
+        if node_properties_to_remove:
+            self._remove_node_properties(node_properties_to_remove)
 
 
 
@@ -85,7 +212,7 @@ class CoNLLReader(object):
     """
 
     "" "Static properties"""
-    CONLL06_COLUMNS = ['id', 'form', 'lemma', 'cpos', 'pos', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
+    CONLL06_COLUMNS = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
     CONLL_U_COLUMNS = [('id', parse_id), ('form', str), ('lemma', str), ('cpostag', str),
                    ('postag', str), ('feats', str), ('head', parse_id), ('deprel', str),
                    ('deps', parse_deps), ('misc', str)]
@@ -141,26 +268,7 @@ class CoNLLReader(object):
             # emtpy line afterwards
             print(u"", file=out)
 
-    def _remove_fields(self,sent,fields):
-        #TODO remove fx "form" and "label"
 
-        return sent
-
-    def _keep_label_prefixes(self,sent):
-        #TODO nmod:tmod --> nmod
-
-        return sent
-
-    def _keep_fused_form(self,sent):
-        for fusedform in sent.graph["multi_tokens"]:
-                print(sent.graph["multi_tokens"][fusedform])
-        return sent
-
-
-    def _filter_sentence_content(self,sent_deptree,keepFusedForm=False, lang=None, posPreferenceDict=None):
-        if keepFusedForm:
-            sent = self._keep_fused_form(sent_deptree)
-        return sent_deptree
 
     def read_conll_u(self,filename,keepFusedForm=False, lang=None, posPreferenceDict=None):
         sentences = []
@@ -202,7 +310,7 @@ class CoNLLReader(object):
                     #print(token_dict['id'])
                     first_token_id = int(token_dict['id'][0])
                     multi_tokens[first_token_id] = token_dict
-        return [self._filter_sentence_content(s,keepFusedForm,lang,posPreferenceDict) for s in sentences]
+        return sentences
 
 
     def read_conll_u_old(self, conll_path, keepFusedForm=False, lang=None, posPreferenceDict=None):
@@ -317,20 +425,6 @@ class CoNLLReader(object):
         return trees
 
 
-def span_makes_subtree(sent_graph, initidx, endidx):
-    G = nx.Graph()
-    try:
-        span_nodes = list(range(initidx,endidx+1))
-        span_words = [sent_graph.node[x]["form"] for x in span_nodes]
-        print(sent_graph,span_nodes)
-    except:
-        print(sent_graph.nodes())
-
-    G.add_nodes_from(span_nodes)
-    for h,d in sent_graph.edges():
-        if h in span_nodes and d in span_nodes:
-            G.add_edge(h,d)
-    return span_words,span_nodes,nx.is_tree(G)
 
 
 class ParsedToken(object):
