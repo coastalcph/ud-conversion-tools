@@ -1,5 +1,6 @@
 import networkx as nx
 from collections import Counter
+import re
 
 
 #TODO make these parse functions static methods of ConllReder
@@ -65,7 +66,13 @@ class DependencyTree(nx.DiGraph):
             return True
 
     def remove_arabic_diacritics(self):
-        pass
+        # The following code is based on nltk.stem.isri
+        # It is equivalent to an interative application of isri.norm(word,num=1)
+        # i.e. we do not remove any hamza characters
+
+        re_short_vowels = re.compile(r'[\u064B-\u0652]')
+        for n in self.nodes():
+            self.node[n]["form"] = re_short_vowels.sub('', self.node[n]["form"])
 
 
     def get_highest_index_of_span(self, span):  # retrieves the node index that is closest to root
@@ -268,10 +275,15 @@ class CoNLLReader(object):
             yield sent
 
     def write_conll(self, list_of_graphs, conll_path,conllformat):
+        discardcomments = True
+        discard_fusedtokens = True
         if conllformat == "conll2009":
             columns = self.CONLL09_COLUMNS
+        elif conllformat == "conllu":
+            columns = self.CONLL_U_COLUMNS
         else:
             columns = self.CONLL06_COLUMNS
+
         with conll_path.open('w') as out:
             for sent_i, sent in enumerate(list_of_graphs):
                 if sent_i > 0:
