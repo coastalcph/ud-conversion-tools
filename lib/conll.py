@@ -131,7 +131,7 @@ class DependencyTree(nx.DiGraph):
                 if fieldname in fields:
                     self.node[n][fieldname]="_"
 
-    def _remove_label_suffixes(self):
+    def _remove_deprel_suffixes(self):
         for h,d in self.edges():
             if ":" in self[h][d]["deprel"]:
                 self[h][d]["deprel"]=self[h][d]["deprel"].split(":")[0]
@@ -227,9 +227,11 @@ class DependencyTree(nx.DiGraph):
             self.node[1]["form"]=self.node[1]["form"]+"%%%%%"
             print("Not a tree after keeping fused forms:",nx.is_weakly_connected(self), nx.is_directed_acyclic_graph(self))
 
-    def filter_sentence_content(self,keepFusedForm=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None):
+    def filter_sentence_content(self,keepFusedForm=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None,remove_deprel_suffixes=False):
         if keepFusedForm:
             self._keep_fused_form(posPreferenceDict)
+        if remove_deprel_suffixes:
+            self._remove_deprel_suffixes()
         if node_properties_to_remove:
             self._remove_node_properties(node_properties_to_remove)
 
@@ -285,6 +287,9 @@ class CoNLLReader(object):
 
         with conll_path.open('w') as out:
             for sent_i, sent in enumerate(list_of_graphs):
+                #if print_comments and sent.graph["comments"]:
+                #    for c in sent.graph["comments"]:
+                #        print(c)
                 if sent_i > 0:
                     print("", file=out)
                 for token_i in range(1, max(sent.nodes()) + 1):
@@ -353,6 +358,8 @@ class CoNLLReader(object):
 
 
     def read_conll_u_old(self, conll_path, keepFusedForm=False, lang=None, posPreferenceDict=None):
+        #TODO DEPRECATED -- keeping this on site for reference
+
         """
         default is like Dan Zeman's conllu_to_conll.pl:   (https://github.com/UniversalDependencies/tools/blob/master/conllu_to_conllx.pl)
         - default: remove comments and remove fused forms
