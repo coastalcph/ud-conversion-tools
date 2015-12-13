@@ -255,7 +255,7 @@ class CoNLLReader(object):
 
     def read_conll_2006(self, conll_path):
         sent = DependencyTree()
-
+        #TODO add comments in reading so they can be written if needed
         for conll_line in conll_path.open():
             parts = conll_line.strip().split()
             if len(parts) in (8, 10):
@@ -274,9 +274,8 @@ class CoNLLReader(object):
         if len(sent):
             yield sent
 
-    def write_conll(self, list_of_graphs, conll_path,conllformat):
-        discardcomments = True
-        discard_fusedtokens = True
+    def write_conll(self, list_of_graphs, conll_path,conllformat, print_fused_forms=False,print_comments=False):
+        # TODO add comment writing
         if conllformat == "conll2009":
             columns = self.CONLL09_COLUMNS
         elif conllformat == "conllu":
@@ -296,15 +295,14 @@ class CoNLLReader(object):
                     token_dict['deprel'] = sent[head_i][token_i]['deprel']
                     token_dict['id'] = token_i
                     row = [str(token_dict.get(col, '_')) for col in columns]
+                    if print_fused_forms and token_i in sent.graph["multi_tokens"]:
+                       currentmulti = sent.graph["multi_tokens"][token_i]
+                       currentmulti["id"]=str(currentmulti["id"][0])+"-"+str(currentmulti["id"][1])
+                       currentmulti["feats"]="_"
+                       currentmulti["head"]="_"
+                       rowmulti = [str(currentmulti.get(col, '_')) for col in columns]
+                       print(u"\t".join(rowmulti),file=out)
                     print(u"\t".join(row), file=out)
-                    #TODO the write method ONLY has to write, not to modify the trees. We will this in _filter_sentence_content
-                    #if token_i in sent.graph["multi_tokens"]:
-                    #    currentmulti = sent.graph["multi_tokens"][token_i]
-                    #    currentmulti["id"]=str(currentmulti["id"][0])+"-"+str(currentmulti["id"][1])
-                    #    currentmulti["feats"]="_"
-                    #    currentmulti["head"]="_"
-                    #    rowmulti = [str(currentmulti.get(col, '_')) for col in columns]
-                    #    print(u"\t".join(rowmulti),file=out)
             print(u"\t".join(row),file=out)
             # emtpy line afterwards
             print(u"", file=out)
