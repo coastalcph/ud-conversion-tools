@@ -227,13 +227,15 @@ class DependencyTree(nx.DiGraph):
             self.node[1]["form"]=self.node[1]["form"]+"%%%%%"
             print("Not a tree after keeping fused forms:",nx.is_weakly_connected(self), nx.is_directed_acyclic_graph(self))
 
-    def filter_sentence_content(self,keepFusedForm=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None,remove_deprel_suffixes=False):
-        if keepFusedForm:
+    def filter_sentence_content(self,replace_subtokens_with_fused_forms=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None,remove_deprel_suffixes=False,remove_arabic_diacritics=False):
+        if replace_subtokens_with_fused_forms:
             self._keep_fused_form(posPreferenceDict)
         if remove_deprel_suffixes:
             self._remove_deprel_suffixes()
         if node_properties_to_remove:
             self._remove_node_properties(node_properties_to_remove)
+        if remove_arabic_diacritics:
+            self.remove_arabic_diacritics()
 
 
 
@@ -281,17 +283,17 @@ class CoNLLReader(object):
         if conllformat == "conll2009":
             columns = self.CONLL09_COLUMNS
         elif conllformat == "conllu":
-            columns = self.CONLL_U_COLUMNS
+            columns = [colname for colname, fname in self.CONLL_U_COLUMNS]
         else:
             columns = self.CONLL06_COLUMNS
 
         with conll_path.open('w') as out:
             for sent_i, sent in enumerate(list_of_graphs):
-                #if print_comments and sent.graph["comments"]:
-                #    for c in sent.graph["comments"]:
-                #        print(c)
                 if sent_i > 0:
                     print("", file=out)
+                if print_comments:
+                    for c in sent.graph["comment"]:
+                        print(c, file=out)
                 for token_i in range(1, max(sent.nodes()) + 1):
                     token_dict = dict(sent.node[token_i])
                     head_i = sent.head_of(token_i)
@@ -355,122 +357,6 @@ class CoNLLReader(object):
                     first_token_id = int(token_dict['id'][0])
                     multi_tokens[first_token_id] = token_dict
         return sentences
-
-
-    def read_conll_u_old(self, conll_path, keepFusedForm=False, lang=None, posPreferenceDict=None):
-        #TODO DEPRECATED -- keeping this on site for reference
-
-        """
-        default is like Dan Zeman's conllu_to_conll.pl:   (https://github.com/UniversalDependencies/tools/blob/master/conllu_to_conllx.pl)
-        - default: remove comments and remove fused forms
-
-        - keepFusedForm=True: apply Hector Martinez Alonso's POS preference rules: cf.
-          https://bitbucket.org/emnlp/text2depparse/src/86428c9e61b4e532958f23245060c3203a7a6a02/source/conllu2pos_parse_input.py?at=master&fileviewer=file-view-default
-        """
-
-        # read in all data first
-        instances = []
-        sentence = []
-        for conll_line in conll_path.open():
-            if conll_line.startswith("#"): #ignore comments
-                continue
-            parts = conll_line.strip().split()
-            if len(parts)>10:
-                parts = parts[:11] #ignore additional columns (secondary edges etc)
-            if len(parts) in (8, 10):
-                token = dict(zip(self.CONLL06_COLUMNS, parts))
-                ptoken = ParsedToken(token)
-                sentence.append(ptoken)
-            elif len(parts) == 0:
-                instances.append(sentence)
-                sentence = []
-            else:
-                raise Exception("Invalid input format in line: ", conll_line)
-
-        if sentence:
-            instances.append(sentence)
-            sentence = []
-
-        # create graphs
-        trees = []
-
-        for instance in instances:
-            sent_graph = DependencyTree() #node: node 0 will be root (added by add_edge)
-
-            newTokens=[]
-            refTokens=[t for t in instance if not t.fused] # original non-fused token ids (no root!)
-
-            i = 0
-            keptindices = []
-            skippedindices = {}
-            while i < len(instance):
-                token = instance[i]
-
-                if not keepFusedForm:
-                    i+=1
-                    if token.fused:
-                        continue
-                    sent_graph.add_node(token.id,token.to_dict())
-                    sent_graph.add_edge(token.head, token.id, deprel=token.deprel)
-                else:
-                    # handling of fused forms
-                    if token.fused:
-                        startpos = refTokens[token.start-1].cpos
-                        endpos = refTokens[token.end-1].cpos
-                        ## check which has preference
-
-                        print(span_makes_subtree(instance,token.start,token.end))
-
-                        try:
-                            #print(startpos, endpos, token.start, token.end)
-                            if posPreferenceDict[lang].index(startpos) < posPreferenceDict[lang].index(endpos):
-                                head_syntax_t = refTokens[token.start-1]
-                            else:
-                                head_syntax_t = refTokens[token.end-1]
-                        except:
-                            print("Except",token)
-                            head_syntax_t= refTokens[token.start-1] #Patch
-
-                        # new form and lemma is fused form
-                        head_syntax_t.form = token.form
-                        head_syntax_t.lemma = token.lemma
-
-                        i = i + 1 + 1 + token.end - token.start  #jump over skipped form
-                        newTokens.append(head_syntax_t)
-                        keptindices.append(head_syntax_t.id)
-                        # store head of skipped tokens
-                        for skipped in range(token.start,token.end+1):
-                            skippedindices[(str(skipped))]=head_syntax_t.id
-                    else:
-                        newTokens.append(token)
-                        keptindices.append(token.id)
-                        i+=1
-
-            if keepFusedForm:
-                for t in newTokens:
-                    if not skippedindices:
-                        sent_graph.add_node(t.id,t.to_dict())
-                        sent_graph.add_edge(t.head, t.id, deprel=t.deprel)
-                    else:
-                        #instance has fused forms
-                        t.id = keptindices.index(t.id)+1
-                        if t.head == 0:
-                            pass
-                        elif t.head in skippedindices:
-                            t.head = keptindices.index(skippedindices[t.head])+1
-                        else:
-                            try:
-                                t.head = keptindices.index(t.head)+1
-                            except:
-                                print(t, token, keptindices)
-                        sent_graph.add_node(t.id,t.to_dict())
-                        sent_graph.add_edge(t.head, t.id, deprel=t.deprel)
-
-            trees.append(sent_graph)
-
-        return trees
-
-
 
 # TODO ParsedToken should be deprecated
 class ParsedToken(object):

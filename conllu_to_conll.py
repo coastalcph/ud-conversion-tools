@@ -10,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser(description="""Convert conllu to conll format""")
     parser.add_argument('input', help="conllu file")
     parser.add_argument('output', help="target file", type=Path)
-    parser.add_argument('--keep_fused_forms', help="By default removes fused tokens", default=False, action="store_true")
+    parser.add_argument('--replace_subtokens_with_fused_forms', help="By default removes fused tokens", default=False, action="store_true")
     parser.add_argument('--remove_deprel_suffixes', help="Restrict deprels to the common universal subset, e.g. nmod:tmod becomes nmod", default=False, action="store_true")
     parser.add_argument('--remove_node_properties', help="space-separated list of node properties to remove: form, lemma, cpostag, postag, feats", choices=['form', 'lemma', 'cpostag','postag','feats'],  metavar='prop', type=str, nargs='+')
     parser.add_argument('--lang', help="specify a language 2-letter code", default="default")
@@ -44,14 +44,9 @@ def main():
     # As per Dec 2015 the args.lang variable is redundant once you have current_pos_precedence_list
     # We keep it for future modifications, i.e. any language-specific modules
     for s in modif_treebank:
-        s.filter_sentence_content(args.keep_fused_forms, args.lang, current_pos_precedence_list,args.remove_node_properties,args.remove_deprel_suffixes)
+        s.filter_sentence_content(args.replace_subtokens_with_fused_forms, args.lang, current_pos_precedence_list,args.remove_node_properties,args.remove_deprel_suffixes,args.remove_arabic_diacritics)
 
-    if args.remove_arabic_diacritics:
-        for s in modif_treebank:
-            s.remove_arabic_diacritics()
-
-    cio.write_conll(orig_treebank,args.output, args.output_format,print_fused_forms=args.print_fused_forms, print_comments=args.print_comments)
-    #TODO decide what to do about the comments
+    cio.write_conll(modif_treebank,args.output, args.output_format,print_fused_forms=args.print_fused_forms, print_comments=args.print_comments)
 
 if __name__ == "__main__":
     main()
