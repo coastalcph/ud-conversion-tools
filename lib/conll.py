@@ -164,18 +164,8 @@ class DependencyTree(nx.DiGraph):
             fusedform = self.graph["multi_tokens"][fusedform_idx]["form"]
             fusedform_start, fusedform_end = self.graph["multi_tokens"][fusedform_idx]["id"]
             fuseform_span = list(range(fusedform_start,fusedform_end+1))
-            #spanhead = self.get_unique_highest_node(fuseform_span) # N.B. no need for the subspan to be a tree if there is one single highest element
-
-            #if not spanhead:
-            #    spanhead = self._choose_spanhead_from_heuristics(fuseform_span,posPreferenceDicts)
-            #    debug_symbol="$$$$"
-            #else:
-            #    debug_symbol="####"
 
             if spanhead:
-                changes = True
-                #print(spanhead, self.node[spanhead]["form"],fusedform,self.get_sentence_as_string())
-
                 #Step 1: Replace form of head span (A)  with fusedtoken form  -- in this way we keep the lemma and features if any
                 self.node[spanhead]["form"] = "###"+fusedform
                 # 2-  Reattach C-level (external dependents) to A
@@ -194,8 +184,6 @@ class DependencyTree(nx.DiGraph):
                 for int_dep in internal_dependents:
                     self.remove_edge(self.head_of(int_dep),int_dep)
                     self.remove_node(int_dep)
-                    #self.node[int_dep]["form"]="REMOVED"
-                    #self.add_edge(0,int_dep,deprel="REMOVED")
 
         #4- reconstruct tree at the very end
         new_index_dict = {}
