@@ -167,7 +167,7 @@ class DependencyTree(nx.DiGraph):
 
             if spanhead:
                 #Step 1: Replace form of head span (A)  with fusedtoken form  -- in this way we keep the lemma and features if any
-                self.node[spanhead]["form"] = "###"+fusedform
+                self.node[spanhead]["form"] = fusedform
                 # 2-  Reattach C-level (external dependents) to A
                 #print(fuseform_span,spanhead)
 
@@ -185,7 +185,7 @@ class DependencyTree(nx.DiGraph):
                     self.remove_edge(self.head_of(int_dep),int_dep)
                     self.remove_node(int_dep)
 
-        #4- reconstruct tree at the very end
+        #4 reconstruct tree at the very end
         new_index_dict = {}
         for new_node_index, old_node_idex in enumerate(sorted(self.nodes())):
             new_index_dict[old_node_idex] = new_node_index
@@ -197,10 +197,10 @@ class DependencyTree(nx.DiGraph):
 
         for h, d in self.edges():
             T.add_edge(new_index_dict[h],new_index_dict[d],deprel=self[h][d]["deprel"])
-        # Quick removal of edges and nodes
+        #4A Quick removal of edges and nodes
         self.__init__()
 
-        # Rewriting the Deptree in Self
+        #4B Rewriting the Deptree in Self
         # TODO There must a more elegant way to rewrite self -- self= T for instance?
         for n in sorted(T.nodes()):
             self.add_node(n,T.node[n])
@@ -212,8 +212,7 @@ class DependencyTree(nx.DiGraph):
         self.graph["multi_tokens"] = {}
 
         if not nx.is_tree(self):
-            self.node[1]["form"]=self.node[1]["form"]+"%%%%%"
-            print("Not a tree after keeping fused forms:",nx.is_weakly_connected(self), nx.is_directed_acyclic_graph(self))
+            print("Not a tree after fused-form heuristics:",self.get_sentence_as_string())
 
     def filter_sentence_content(self,replace_subtokens_with_fused_forms=False, lang=None, posPreferenceDict=None,node_properties_to_remove=None,remove_deprel_suffixes=False,remove_arabic_diacritics=False):
         if replace_subtokens_with_fused_forms:
