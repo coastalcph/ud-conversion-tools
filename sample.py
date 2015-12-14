@@ -6,7 +6,7 @@ import random
 from lib.conll import CoNLLReader
 
 def main():
-    parser = argparse.ArgumentParser(description="""Convert conllu to conll format""")
+    parser = argparse.ArgumentParser(description="""Sample k trees from a dependency tree file (w/o replacement)""")
     parser.add_argument('input', help="conllu file")
     parser.add_argument('output', help="target file", type=Path)
     parser.add_argument('--output_format', choices=['conll2006', 'conll2009', 'conllu'], default="conll2006")
