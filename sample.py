@@ -9,16 +9,21 @@ def main():
     parser = argparse.ArgumentParser(description="""Sample k trees from a dependency tree file (w/o replacement)""")
     parser.add_argument('input', help="conllu file")
     parser.add_argument('output', help="target file", type=Path)
-    parser.add_argument('--output_format', choices=['conll2006', 'conll2009', 'conllu'], default="conll2006")
+    parser.add_argument('--input-format', choices=['conll2006', 'conll2006dense', 'conllu'], default="conllu")
 
     parser.add_argument('--k',default=None,help="randomly sample k instances from file", type=int, required=True)
-    parser.add_argument('--ignore-first-n',default=None,help="ignore first n sentences in the file", type=int, required=False)
+    parser.add_argument('--ignore-first-n',default=0,help="ignore first n sentences in the file", type=int, required=False)
     parser.add_argument('--seed',default=None,help="seed to use")
 
     args = parser.parse_args()
 
     cio = CoNLLReader()
-    orig_treebank = cio.read_conll_u(args.input)
+    if args.input_format == "conllu":
+        orig_treebank = cio.read_conll_u(args.input)
+    elif args.input_format == "conll2006":
+        orig_treebank = cio.read_conll_2006(args.input)
+    elif args.input_format == "conll2006dense":
+        orig_treebank = cio.read_conll_2006_dense(args.input)
     num_trees = len(orig_treebank)
 
 
@@ -40,7 +45,7 @@ def main():
     random.shuffle(orig_treebank)
     sample = orig_treebank[0:args.k]
     print("sampled {} trees. seed: {}".format(len(sample), args.seed))
-    cio.write_conll(sample, args.output, args.output_format)
+    cio.write_conll(sample, args.output, "conll2006")
 
 if __name__ == "__main__":
     main()

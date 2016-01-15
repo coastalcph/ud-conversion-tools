@@ -233,6 +233,7 @@ class CoNLLReader(object):
 
     "" "Static properties"""
     CONLL06_COLUMNS = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
+    CONLL06DENSE_COLUMNS = [('id',int), ('form',str), ('lemma',str), ('cpostag',str), ('postag',str), ('feats',str), ('head',int), ('deprel',str), ('edgew',str)]
     CONLL_U_COLUMNS = [('id', parse_id), ('form', str), ('lemma', str), ('cpostag', str),
                    ('postag', str), ('feats', str), ('head', parse_id), ('deprel', str),
                    ('deps', parse_deps), ('misc', str)]
@@ -244,26 +245,44 @@ class CoNLLReader(object):
         pass
 
 
-    def read_conll_2006(self, conll_path):
+    # TODO: needs update
+    # def read_conll_2006(self, filename):
+    #     sentences = []
+    #     sent = DependencyTree()
+    #     for conll_line in open(filename):
+    #         parts = conll_line.strip().split()
+    #         if len(parts) in (8, 10):
+    #             token = dict(zip(self.CONLL06_COLUMNS, parts))
+    #             p = ParsedToken(token)
+    #             sent.add_node(p.id, p.to_dict())
+    #             # Remove head information from the node properties to avoid confusion
+    #              # in case the tree structure changes.
+    #             sent.add_edge(p.head, p.id, deprel=p.deprel)
+    #         elif len(parts) == 0:
+    #             sentences.append(sent)
+    #             sent = DependencyTree()
+    #         else:
+    #             raise Exception("Invalid input format in line: ", conll_line)
+    #
+    #     return sentences
+
+    def read_conll_2006_dense(self, filename):
+        sentences = []
         sent = DependencyTree()
-        #TODO add comments in reading so they can be written if needed
-        for conll_line in conll_path.open():
-            parts = conll_line.strip().split()
-            if len(parts) in (8, 10):
-                token = dict(zip(self.CONLL06_COLUMNS, parts))
-                p = ParsedToken(token)
-                sent.add_node(p.id, p.to_dict())
-                # Remove head information from the node properties to avoid confusion
-                 # in case the tree structure changes.
-                sent.add_edge(p.head, p.id, deprel=p.deprel)
-            elif len(parts) == 0:
-                yield sent
+        for conll_line in open(filename):
+            parts = conll_line.strip().split("\t")
+            if len(parts) == 9:
+                token_dict = {key: conv_fn(val) for (key, conv_fn), val in zip(self.CONLL06DENSE_COLUMNS, parts)}
+
+                sent.add_node(token_dict['id'], token_dict)
+                sent.add_edge(token_dict['head'], token_dict['id'], deprel=token_dict['deprel'])
+            elif len(parts) == 0 or (len(parts)==1 and parts[0]==""):
+                sentences.append(sent)
                 sent = DependencyTree()
             else:
                 raise Exception("Invalid input format in line: ", conll_line)
 
-        if len(sent):
-            yield sent
+        return sentences
 
     def write_conll(self, list_of_graphs, conll_path,conllformat, print_fused_forms=False,print_comments=False):
         # TODO add comment writing
@@ -345,32 +364,32 @@ class CoNLLReader(object):
                     multi_tokens[first_token_id] = token_dict
         return sentences
 
-# TODO ParsedToken should be deprecated
-class ParsedToken(object):
-    """
-    class used for reading in data
-    """
-    def __init__(self,token):
-        try:
-            self.id = int(token['id'])
-            self.head = int(token['head'])
-            self.fused = False
-        except ValueError:
-            self.head = None # fused tokens need to determine head (see read_conll_u)
-            self.fused = True
-            assert(len(token['id'].split("-"))==2)
-            self.start = int(token['id'].split("-")[0])
-            self.end = int(token['id'].split("-")[1])
-            self.id = self.start
-        self.form = token['word']
-        self.lemma = token['lemma']
-        self.cpos = token['cpos']
-        self.pos = token['pos']
-        self.feats = token['feats']
-        self.deprel = token['deprel']
-
-    def __str__(self):
-        return str(self.id)+" "+self.form
-
-    def to_dict(self):
-        return {'id': self.id, 'word':self.form, 'lemma': self.lemma, 'cpos': self.cpos, 'pos': self.pos, 'feats': self.feats, 'head': self.head, 'deprel': self.deprel}
+# # TODO ParsedToken should be deprecated
+# class ParsedToken(object):
+#     """
+#     class used for reading in data
+#     """
+#     def __init__(self,token):
+#         try:
+#             self.id = int(token['id'])
+#             self.head = int(token['head'])
+#             self.fused = False
+#         except ValueError:
+#             self.head = None # fused tokens need to determine head (see read_conll_u)
+#             self.fused = True
+#             assert(len(token['id'].split("-"))==2)
+#             self.start = int(token['id'].split("-")[0])
+#             self.end = int(token['id'].split("-")[1])
+#             self.id = self.start
+#         self.form = token['word']
+#         self.lemma = token['lemma']
+#         self.cpos = token['cpos']
+#         self.pos = token['pos']
+#         self.feats = token['feats']
+#         self.deprel = token['deprel']
+#
+#     def __str__(self):
+#         return str(self.id)+" "+self.form
+#
+#     def to_dict(self):
+#         return {'id': self.id, 'word':self.form, 'lemma': self.lemma, 'cpos': self.cpos, 'pos': self.pos, 'feats': self.feats, 'head': self.head, 'deprel': self.deprel}
