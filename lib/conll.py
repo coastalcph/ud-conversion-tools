@@ -271,7 +271,7 @@ class CoNLLReader(object):
     def read_conll_2006(self, filename):
         sentences = []
         sent = DependencyTree()
-        for conll_line in open(filename):
+        for line_num, conll_line in enumerate(open(filename)):
             parts = conll_line.strip().split("\t")
             if len(parts) in (8, 10):
                 token_dict = {key: conv_fn(val) for (key, conv_fn), val in zip(self.CONLL06_COLUMNS, parts)}
@@ -282,7 +282,7 @@ class CoNLLReader(object):
                 sentences.append(sent)
                 sent = DependencyTree()
             else:
-                raise Exception("Invalid input format in line: ", conll_line, filename)
+                raise Exception("Invalid input format in line nr: ", line_num, conll_line, filename)
 
         return sentences
 
