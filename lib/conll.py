@@ -238,35 +238,12 @@ class CoNLLReader(object):
     CONLL_U_COLUMNS = [('id', parse_id), ('form', str), ('lemma', str), ('cpostag', str),
                    ('postag', str), ('feats', str), ('head', parse_id), ('deprel', str),
                    ('deps', parse_deps), ('misc', str)]
-    CONLL09_COLUMNS =  ['id','form','lemma','plemma','cpostag','pcpostag','feats','pfeats','head','phead','deprel','pdeprel']
+    #CONLL09_COLUMNS =  ['id','form','lemma','plemma','cpostag','pcpostag','feats','pfeats','head','phead','deprel','pdeprel']
 
 
 
     def __init__(self):
         pass
-
-
-
-    # TODO: needs update
-    # def read_conll_2006(self, filename):
-    #     sentences = []
-    #     sent = DependencyTree()
-    #     for conll_line in open(filename):
-    #         parts = conll_line.strip().split()
-    #         if len(parts) in (8, 10):
-    #             token = dict(zip(self.CONLL06_COLUMNS, parts))
-    #             p = ParsedToken(token)
-    #             sent.add_node(p.id, p.to_dict())
-    #             # Remove head information from the node properties to avoid confusion
-    #              # in case the tree structure changes.
-    #             sent.add_edge(p.head, p.id, deprel=p.deprel)
-    #         elif len(parts) == 0:
-    #             sentences.append(sent)
-    #             sent = DependencyTree()
-    #         else:
-    #             raise Exception("Invalid input format in line: ", conll_line)
-    #
-    #     return sentences
 
     def read_conll_2006(self, filename):
         sentences = []
@@ -283,7 +260,7 @@ class CoNLLReader(object):
                 sent = DependencyTree()
             else:
                 raise Exception("Invalid input format in line nr: ", line_num, conll_line, filename)
-
+     
         return sentences
 
     def read_conll_2006_dense(self, filename):
@@ -308,12 +285,10 @@ class CoNLLReader(object):
 
     def write_conll(self, list_of_graphs, conll_path,conllformat, print_fused_forms=False,print_comments=False):
         # TODO add comment writing
-        if conllformat == "conll2009":
-            columns = self.CONLL09_COLUMNS
-        elif conllformat == "conllu":
+        if conllformat == "conllu":
             columns = [colname for colname, fname in self.CONLL_U_COLUMNS]
         else:
-            columns = self.CONLL06_COLUMNS
+            columns = [colname for colname, fname in self.CONLL06_COLUMNS]
 
         with conll_path.open('w') as out:
             for sent_i, sent in enumerate(list_of_graphs):
@@ -341,7 +316,6 @@ class CoNLLReader(object):
             print(u"\t".join(row),file=out)
             # emtpy line afterwards
             print(u"", file=out)
-
 
 
     def read_conll_u(self,filename,keepFusedForm=False, lang=None, posPreferenceDict=None):
@@ -385,33 +359,3 @@ class CoNLLReader(object):
                     first_token_id = int(token_dict['id'][0])
                     multi_tokens[first_token_id] = token_dict
         return sentences
-
-# # TODO ParsedToken should be deprecated
-# class ParsedToken(object):
-#     """
-#     class used for reading in data
-#     """
-#     def __init__(self,token):
-#         try:
-#             self.id = int(token['id'])
-#             self.head = int(token['head'])
-#             self.fused = False
-#         except ValueError:
-#             self.head = None # fused tokens need to determine head (see read_conll_u)
-#             self.fused = True
-#             assert(len(token['id'].split("-"))==2)
-#             self.start = int(token['id'].split("-")[0])
-#             self.end = int(token['id'].split("-")[1])
-#             self.id = self.start
-#         self.form = token['word']
-#         self.lemma = token['lemma']
-#         self.cpos = token['cpos']
-#         self.pos = token['pos']
-#         self.feats = token['feats']
-#         self.deprel = token['deprel']
-#
-#     def __str__(self):
-#         return str(self.id)+" "+self.form
-#
-#     def to_dict(self):
-#         return {'id': self.id, 'word':self.form, 'lemma': self.lemma, 'cpos': self.cpos, 'pos': self.pos, 'feats': self.feats, 'head': self.head, 'deprel': self.deprel}
