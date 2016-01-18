@@ -278,7 +278,7 @@ class CoNLLReader(object):
 
                 sent.add_node(token_dict['id'], token_dict)
                 sent.add_edge(token_dict['head'], token_dict['id'], deprel=token_dict['deprel'])
-            elif len(parts) == 0:
+            elif len(parts) == 0  or (len(parts)==1 and parts[0]==""):
                 sentences.append(sent)
                 sent = DependencyTree()
             else:
