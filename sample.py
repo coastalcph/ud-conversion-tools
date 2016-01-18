@@ -29,7 +29,7 @@ def main():
 
     if args.seed:
         random.seed(args.seed)
-    print("Loaded treebank with {} sentences".format(num_trees), file=sys.stderr)
+    print("Loaded treebank {} with {} sentences".format(args.input,num_trees), file=sys.stderr)
     print(args.k, num_trees)
     if args.k > num_trees:
         print("k cannot be larger than {} trees. abort. ".format(num_trees))
