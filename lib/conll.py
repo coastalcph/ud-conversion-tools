@@ -282,7 +282,7 @@ class CoNLLReader(object):
                 sentences.append(sent)
                 sent = DependencyTree()
             else:
-                raise Exception("Invalid input format in line: ", conll_line)
+                raise Exception("Invalid input format in line: ", conll_line, filename)
 
         return sentences
 
