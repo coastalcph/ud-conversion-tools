@@ -245,6 +245,7 @@ class CoNLLReader(object):
         pass
 
 
+
     # TODO: needs update
     # def read_conll_2006(self, filename):
     #     sentences = []
@@ -266,6 +267,24 @@ class CoNLLReader(object):
     #
     #     return sentences
 
+    def read_conll_2006(self, filename):
+        sentences = []
+        sent = DependencyTree()
+        for conll_line in open(filename):
+            parts = conll_line.strip().split("\t")
+            if len(parts) in (8, 10):
+                token_dict = {key: conv_fn(val) for (key, conv_fn), val in zip(self.CONLL06_COLUMNS, parts)}
+
+                sent.add_node(token_dict['id'], token_dict)
+                sent.add_edge(token_dict['head'], token_dict['id'], deprel=token_dict['deprel'])
+            elif len(parts) == 0:
+                sentences.append(sent)
+                sent = DependencyTree()
+            else:
+                raise Exception("Invalid input format in line: ", conll_line)
+
+        return sentences
+
     def read_conll_2006_dense(self, filename):
         sentences = []
         sent = DependencyTree()
@@ -283,6 +302,8 @@ class CoNLLReader(object):
                 raise Exception("Invalid input format in line: ", conll_line)
 
         return sentences
+
+
 
     def write_conll(self, list_of_graphs, conll_path,conllformat, print_fused_forms=False,print_comments=False):
         # TODO add comment writing
