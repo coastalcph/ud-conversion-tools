@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--k',default=None,help="randomly sample k instances from file", type=int, required=True)
     parser.add_argument('--ignore-first-n',default=0,help="ignore first n sentences in the file", type=int, required=False)
     parser.add_argument('--seed',default=None,help="seed to use")
+    parser.add_argument('--ignore-warning', help="if k > size, ignore warning and select all", default=False, action="store_true")
 
     args = parser.parse_args()
 
@@ -32,8 +33,9 @@ def main():
     print("Loaded treebank {} with {} sentences".format(args.input,num_trees), file=sys.stderr)
     print(args.k, num_trees)
     if args.k > num_trees:
-        print("k cannot be larger than {} trees. abort. ".format(num_trees))
-        exit()
+        if not args.ignore_warning:
+            print("k cannot be larger than {} trees. abort. ".format(num_trees))
+            exit()
     if args.ignore_first_n >= (num_trees-args.k):
         print("--ignore-first-n cannot be larger than {} trees. abort. ".format(num_trees-args.k))
         exit()
