@@ -27,17 +27,18 @@ def main():
         orig_treebank = cio.read_conll_2006_dense(args.input)
     num_trees = len(orig_treebank)
 
-
     if args.seed:
         random.seed(args.seed)
     print("Loaded treebank {} with {} sentences".format(args.input,num_trees), file=sys.stderr)
-    print(args.k, num_trees)
+
     if args.k > num_trees:
-        if not args.ignore_warning:
+        if args.ignore_warning:
+            print("ignore-warning={}".format(args.ignore_warning),file=sys.stderr)
+        else:
             print("k cannot be larger than {} trees. abort. ".format(num_trees))
             exit()
-    if args.ignore_first_n >= (num_trees-args.k):
-        print("--ignore-first-n cannot be larger than {} trees. abort. ".format(num_trees-args.k))
+    if args.ignore_first_n >= max(num_trees-args.k,num_trees):
+        print("--ignore-first-n cannot be larger than {} trees. abort. ".format(max(num_trees-args.k,num_trees)))
         exit()
         
     if args.ignore_first_n:
