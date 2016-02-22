@@ -313,7 +313,7 @@ class CoNLLReader(object):
                        rowmulti = [str(currentmulti.get(col, '_')) for col in columns]
                        print(u"\t".join(rowmulti),file=out)
                     print(u"\t".join(row), file=out)
-            print(u"\t".join(row),file=out)
+            
             # emtpy line afterwards
             print(u"", file=out)
 
