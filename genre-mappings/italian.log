@@ -1,0 +1,8 @@
+loaded mapping: {'isst_tanl': 'newspaper', 'quest': 'questions', '5-WIKIBalzac': 'wikipedia', 'tut': 'news_legal', '7-WIKIShake': 'wikipedia', '2-Europarl': 'europarl'}
+Loaded treebank /Users/bplank/corpora/parse/universal-dependencies-1.2/UD_Italian/it-ud-test.conllu with 489 sentences
+questions 108
+wikipedia 21
+newspaper 137
+europarl 22
+news_legal 142
+various 59

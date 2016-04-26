@@ -1,0 +1,26 @@
+from UD1.2 test set:
+
+142 tut
+ 137 isst_tanl
+ 108 quest
+  25 9-PS
+  22 2-Europarl
+  17 test
+  13 5-WIKIBalzac
+   8 7-WIKIShake
+   5 4-FB
+   5 1-CC
+   4 3-UDHR
+   2 splet
+   1 8-WIT3
+
+Italian (test file): officially: legal, news, wiki  
+
+tut: various genres
+quest: questions 
+5-WIKIBalzac + 7-WIKIShake : wikipedia
+2-Europarl: europarl 
+tut: newspaper + legal texts
+isst_tanl: newspaper
+
+rest: add to various

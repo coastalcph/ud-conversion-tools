@@ -1,0 +1,7 @@
+tut	various
+quest	questions
+5-WIKIBalzac	wikipedia
+7-WIKIShake	wikipedia
+2-Europarl	europarl
+tut	news_legal
+isst_tanl	newspaper
