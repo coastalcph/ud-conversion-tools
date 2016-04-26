@@ -17,8 +17,7 @@ def main():
     lines=[line.strip() for line in open(args.mapping)]
     mapping={}
     for line in lines:
-        print(line)
-        commentpart, target = line.split("\t")
+        commentpart, target = line.split()
         mapping[commentpart] = target
     
     print("loaded mapping:", mapping, file=sys.stderr)
@@ -40,7 +39,7 @@ def main():
 
     for tree in orig_treebank:
         found_mapping=False
-        for token in tree.graph['comment'][0].strip().split():
+        for token in " ".join(tree.graph['comment']).strip().split():
             if token in mapping:
                 split[mapping[token]].append(tree)
                 found_mapping=True

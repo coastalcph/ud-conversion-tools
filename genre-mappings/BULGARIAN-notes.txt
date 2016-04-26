@@ -1,0 +1,11 @@
+from UD1.2 test set:
+
+## README says: random sentences and running texts from
+Bulgarian newspapers, literature and administrative documents.
+Genre: news legal fiction popular-science interviews president-bulletin
+
+rest: add to various
+
+#president : president-bulletin
+#constitution legal
+#Standard newspaper

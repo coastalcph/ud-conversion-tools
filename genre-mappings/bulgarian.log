@@ -1,0 +1,7 @@
+loaded mapping: {'#Novinar-2000-11-15': 'newspaper', '#Novinar-2000-11-26': 'newspaper', '#Novinar-2000-12-08': 'newspaper', '#Sega-2000-08-02': 'newspaper', '#random4': 'various', '#kamu': 'literature', '#Novinar-2000-12-04': 'newspaper', '#Novinar-2000-12-05': 'newspaper', '#penchev': 'literature', '#random5': 'various', '#bg-lit': 'literature', '#Novinar-2000-12-12': 'newspaper', '#Sega-2000-08-03': 'newspaper', '#Novinar-2000-12-07': 'newspaper', '#president': 'president-bulletin', '#Standard-2000-10-24': 'newspaper', '#random2': 'various', '#bgpatentlaw': 'legal', '#Novinar-2000-12-02': 'newspaper', '#for-lit': 'literature', '#Novinar-2000-11-16': 'newspaper', '#constitution': 'legal', '#girl': 'various', '#Novinar-2000-12-06': 'newspaper', '#euro': 'legal', '#Sega-2001-01-02': 'newspaper', '#akadgram': 'various', '#brezinski': 'literature', '#Novinar-2001-01-03': 'newspaper', '#Standard-2000-10-31': 'newspaper', '#Novinar-2000-12-01': 'newspaper', '#Novinar-2000-12-21': 'newspaper', '#Novinar-2001-01-08': 'newspaper', '#random3': 'various', '#kleinke': 'literature', '#Novinar-2000-12-14': 'newspaper', '#Novinar-2000-11-24': 'newspaper', '#Novinar-2000-11-23': 'newspaper', '#random1': 'various', '#Novinar-2000-12-13': 'newspaper'}
+Loaded treebank /Users/bplank/corpora/parse/universal-dependencies-1.2/UD_Bulgarian/bg-ud-test.conllu with 1116 sentences
+legal 33
+various 245
+president-bulletin 12
+newspaper 664
+literature 162
