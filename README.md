@@ -1,6 +1,8 @@
 # ud-conversion-tools
 Conversion tools for UD treebanks
 
+* update May 2023: A newer version of this code is at: https://github.com/bplank/ud-conversion-tools 
+
 conllu_to_conll.py: convert conllu to conll format (with the option to choose whether to keep the fused wordforms, e.g. 'della' in Italian, or 'im'  in German
 
 Requires:
